@@ -5,6 +5,8 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.studentcompanion.model.Role;
 import com.studentcompanion.model.User;
@@ -12,6 +14,8 @@ import com.studentcompanion.repository.UserRepository;
 
 @Component
 public class AdminBootstrap implements ApplicationRunner {
+    private static final Logger log = LoggerFactory.getLogger(AdminBootstrap.class);
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -28,7 +32,9 @@ public class AdminBootstrap implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         if (!enabled) return;
         if (email.isBlank() || password.length() < 8) {
-            throw new IllegalStateException("Bootstrap admin requires an email and password of at least 8 characters");
+            log.error("Admin bootstrap was enabled but ADMIN_EMAIL or ADMIN_PASSWORD is invalid; "
+                    + "skipping admin creation. ADMIN_PASSWORD must contain at least 8 characters.");
+            return;
         }
         User admin = userRepository.findByEmail(email.toLowerCase());
         if (admin == null) {
