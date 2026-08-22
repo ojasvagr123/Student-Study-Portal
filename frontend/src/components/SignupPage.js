@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // 👁️ Import eye icons
+import { register } from "../services/authService";
 
 function SignupPage() {
   const [formData, setFormData] = useState({
@@ -26,6 +26,7 @@ function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // 👁️ Eye toggle
   const navigate = useNavigate();
+  const setSession = useAuthStore((state) => state.setSession);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -80,16 +81,8 @@ function SignupPage() {
     };
 
     try {
-      const res = await axios.post("http://localhost:8080/api/auth/register", requestBody, {
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const { token, name, email: userEmail, branch, currentSemester, goal } = res.data;
-
-      const user = { name, email: userEmail, branch, currentSemester, goal };
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      useAuthStore.getState().setUser(user, token);
+      const { user, token } = await register(requestBody);
+      setSession(user, token);
 
       navigate("/dashboard");
     } catch (err) {

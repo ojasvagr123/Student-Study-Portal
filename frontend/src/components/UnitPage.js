@@ -1,6 +1,6 @@
 // src/pages/UnitPage.jsx
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../utils/axiosConfig";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import CommentSection from "../components/CommentSection";
@@ -21,7 +21,7 @@ export default function UnitPage() {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8080/api/subjects/${subjectId}/units`)
+      .get(`/api/subjects/${subjectId}/units`)
       .then((res) => setUnits(res.data));
   }, [subjectId]);
 
@@ -30,11 +30,11 @@ export default function UnitPage() {
     if (!unitId) return;
 
     axios
-      .get(`http://localhost:8080/api/units/${unitId}/resources`)
+      .get(`/api/units/${unitId}/resources`)
       .then((res) => setResources(res.data));
 
     axios
-      .get(`http://localhost:8080/api/units/${unitId}/pyqs`)
+      .get(`/api/units/${unitId}/pyqs`)
       .then((res) => setPyqs(res.data));
   }, [units, activeUnitIndex]);
 

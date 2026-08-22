@@ -4,5 +4,6 @@ public enum CareerGoal {
     GATE,
     CAT,
     UPSC,
-    PLACEMENT
+    PLACEMENT,
+    OTHERS
 }

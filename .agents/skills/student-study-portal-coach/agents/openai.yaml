@@ -1,0 +1,4 @@
+interface:
+  display_name: "Studify Learning & Interview Coach"
+  short_description: "Master Studify through code walkthroughs and interviews"
+  default_prompt: "Use $student-study-portal-coach to assess me, build my complete Studify learning path, teach the first module from the code, and track what I should revise."

@@ -2,17 +2,21 @@ package com.studentcompanion.dto;
 
 import java.time.LocalDate;
 import com.studentcompanion.model.CareerGoal;
+import jakarta.validation.constraints.*;
 
 public class RegistrationRequest {
+    @NotBlank @Size(min = 2, max = 100)
     private String name;
+    @NotBlank @Email
     private String email;
+    @NotBlank @Size(min = 8, max = 72)
     private String password;
 
-    private String enrollmentNumber;
-    private String branch;
-    private Integer currentSemester;
+    @NotBlank private String enrollmentNumber;
+    @NotBlank private String branch;
+    @NotNull @Min(1) @Max(12) private Integer currentSemester;
     private String gender;
-    private CareerGoal goal; 
+    @NotNull private CareerGoal goal;
     private String otherGoal;
     private String leetcodeUrl;
     private String githubUrl;

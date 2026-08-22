@@ -1,6 +1,6 @@
 // src/components/UserComments.jsx
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../utils/axiosConfig";
 import { useAuthStore } from "../stores/authStore";
 
 export default function UserComments() {
@@ -11,7 +11,7 @@ export default function UserComments() {
     if (!user) return;
 
     axios
-      .get(`http://localhost:8080/api/comments/user/${user.id}`, {
+      .get(`/api/comments/user`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

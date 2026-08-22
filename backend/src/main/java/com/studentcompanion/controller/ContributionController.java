@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,10 +18,10 @@ import com.studentcompanion.model.User;
 import com.studentcompanion.repository.ContributionRepository;
 import com.studentcompanion.repository.UserRepository;
 import com.studentcompanion.dto.ContributionDTO;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/contributions")
-@CrossOrigin(origins = "*")
 public class ContributionController {
 @Autowired
 private ContributionRepository contributionRepository;
@@ -34,9 +33,9 @@ private UserRepository userRepository;
 // private CommentRepository commentRepository;
 
 @PostMapping("/add")
-public ResponseEntity<?> addContribution(@RequestBody ContributionDTO dto, Authentication authentication) {
+public ResponseEntity<?> addContribution(@Valid @RequestBody ContributionDTO dto, Authentication authentication) {
     try {
-        String email = (authentication != null) ? authentication.getName() : "agrawalnidhi241@gmail.com";
+        String email = authentication.getName();
         User user = userRepository.findByEmail(email);
         if (user == null) {
             throw new RuntimeException("User not found");
@@ -55,8 +54,7 @@ public ResponseEntity<?> addContribution(@RequestBody ContributionDTO dto, Authe
         contributionRepository.save(contribution);
         return ResponseEntity.ok("✅ Contribution saved");
     } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.internalServerError().body("❌ Server Error: " + e.getMessage());
+        return ResponseEntity.internalServerError().body("Unable to save contribution");
     }
 }
 
@@ -66,7 +64,7 @@ public ResponseEntity<?> addContribution(@RequestBody ContributionDTO dto, Authe
 @GetMapping("/my")
 public ResponseEntity<?> getUserContributions(Authentication authentication) {
     try {
-        String email = (authentication != null) ? authentication.getName() : "agrawalnidhi241@gmail.com";
+        String email = authentication.getName();
         User user = userRepository.findByEmail(email);
         if (user == null) {
             return ResponseEntity.badRequest().body("User not found");
@@ -75,8 +73,7 @@ public ResponseEntity<?> getUserContributions(Authentication authentication) {
         List<Contribution> list = contributionRepository.findByUser(user);
         return ResponseEntity.ok(list);
     } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.internalServerError().body("❌ Failed to fetch contributions: " + e.getMessage());
+        return ResponseEntity.internalServerError().body("Unable to fetch contributions");
     }
 }
 

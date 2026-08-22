@@ -19,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.studentcompanion.filter.JwtAuthenticationFilter;
 import com.studentcompanion.service.CustomUserDetailsService;
@@ -27,6 +28,9 @@ import com.studentcompanion.service.CustomUserDetailsService;
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+
+    @Value("${app.cors.allowed-origins}")
+    private List<String> allowedOrigins;
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
@@ -67,15 +71,14 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/**",
                     "/api/public/**",
-                    "/api/todos/**",
-                    "/", "/favicon.ico", "/css/**", "/js/**", "/images/**"
+                    "/actuator/health/**",
+                    "/", "/favicon.ico"
                 ).permitAll()
-
-                // Secure endpoints
-                .requestMatchers("/api/users/profile").authenticated()
-                .requestMatchers("/api/comments/**").authenticated() // 👈 Required for comment POST
-                
-                .anyRequest().permitAll() // fallback
+                .requestMatchers(org.springframework.http.HttpMethod.GET,
+                    "/api/semesters/**", "/api/subjects/**", "/api/units/**",
+                    "/api/quiz/**", "/uploads/**").permitAll()
+                .requestMatchers("/api/admin/**", "/api/internal/**", "/api/career/admin/**").hasAuthority("ADMIN")
+                .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -87,7 +90,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:3000", "http://localhost:5173"));
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

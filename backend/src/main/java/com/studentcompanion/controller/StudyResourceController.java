@@ -15,15 +15,21 @@ import com.studentcompanion.repository.PyqRepository;
 
 
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import org.springframework.beans.factory.annotation.Value;
 import java.util.List;
 import java.io.IOException;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:3000")
-
 public class StudyResourceController {
+
+    @Value("${app.upload-dir}")
+    private String uploadDir;
+
+    @Value("${app.local-uploads-enabled}")
+    private boolean localUploadsEnabled;
 
     @Autowired
     private StudyResourceService studyService;
@@ -67,23 +73,6 @@ public class StudyResourceController {
         return studyService.getPyqsByUnit(id);
     }
 
-    @PostMapping("/admin/semesters")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public Semester createSemester(@RequestBody Semester semester) {
-        return studyService.createSemester(semester);
-    }
-
-    @PostMapping("/admin/subjects")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public Subject createSubject(@RequestBody Subject subject) {
-        return studyService.createSubject(subject);
-    }
-
-    @PostMapping("/admin/units")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public Unit createUnit(@RequestBody Unit unit) {
-        return studyService.createUnit(unit);
-    }
     @PostMapping("/admin/resources/upload")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Resource> uploadPdfResource(
@@ -93,15 +82,19 @@ public class StudyResourceController {
             @RequestParam("type") ResourceType type
     ) throws IOException {
 
+    if (!localUploadsEnabled) {
+        return ResponseEntity.status(503).build();
+    }
+
     // ✅ Use absolute path
-    String uploadDir = System.getProperty("user.dir") + "/uploads/";
-    File dir = new File(uploadDir);
-    if (!dir.exists()) dir.mkdirs();
-
-    String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-    String filePath = uploadDir + fileName;
-
-    file.transferTo(new File(filePath));
+    Path directory = Path.of(uploadDir).toAbsolutePath().normalize();
+    Files.createDirectories(directory);
+    String originalName = java.util.Optional.ofNullable(file.getOriginalFilename()).orElse("resource.pdf");
+    String safeName = Path.of(originalName).getFileName().toString().replaceAll("[^a-zA-Z0-9._-]", "_");
+    String fileName = System.currentTimeMillis() + "_" + safeName;
+    Path destination = directory.resolve(fileName).normalize();
+    if (!destination.startsWith(directory)) throw new IllegalArgumentException("Invalid file name");
+    file.transferTo(destination);
 
     Unit unit = unitRepository.findById(unitId)
             .orElseThrow(() -> new RuntimeException("Unit not found: " + unitId));

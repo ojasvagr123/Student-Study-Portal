@@ -1,49 +1,26 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
+import { login } from "../services/authService";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const setSession = useAuthStore((state) => state.setSession);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:8080/api/auth/login", {
-        email,
-        password,
-      });
+      const { user, token } = await login({ email, password });
+      setSession(user, token);
 
-      const {
-        token,
-        name,
-        email: userEmail,
-        branch,
-        currentSemester,
-        goal
-      } = response.data;
-
-      const user = {
-        name,
-        email: userEmail,
-        branch,
-        currentSemester,
-        goal
-      };
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      useAuthStore.getState().setUser(user, token); // ✅ CORRECT USAGE
-
-      navigate("/dashboard");
+      navigate(user.role === "ADMIN" ? "/admin" : "/dashboard");
     } catch (err) {
-      console.error(err);
-      setError("Invalid email or password");
+      setError(err.response?.data?.message || "Unable to sign in");
     }
   };
   return (

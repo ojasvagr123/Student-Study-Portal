@@ -1,6 +1,7 @@
 package com.studentcompanion.controller;
 
 import com.studentcompanion.dto.QuizSubmissionDTO;
+import com.studentcompanion.dto.QuizQuestionResponse;
 import com.studentcompanion.model.CareerGoal;
 import com.studentcompanion.model.QuizQuestion;
 import com.studentcompanion.repository.QuizQuestionRepository;
@@ -13,7 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/api/quiz")
-@CrossOrigin(origins = "*")
 public class QuizController {
 
     @Autowired
@@ -27,12 +27,11 @@ public class QuizController {
             List<QuizQuestion> all = quizQuestionRepository.findRandomQuestionsByGoal(enumGoal);
             List<QuizQuestion> top20 = all.size() > 20 ? all.subList(0, 20) : all;
 
-            return ResponseEntity.ok(top20);
+            return ResponseEntity.ok(top20.stream().map(QuizQuestionResponse::from).toList());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(Collections.singletonMap("error", "Invalid career goal: " + goal));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.internalServerError()
                     .body(Collections.singletonMap("error", "Server error while fetching quiz"));
         }

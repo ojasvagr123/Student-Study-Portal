@@ -1,12 +1,16 @@
 package com.studentcompanion.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 public class ContributionDTO {
-    public String title;
-    public String description;
-    public String type;
-    public String subject;
-    public String visibility;
-    public String url;
+    @NotBlank @Size(max = 200) public String title;
+    @NotBlank @Size(max = 2000) public String description;
+    @NotBlank @Size(max = 50) public String type;
+    @NotBlank @Size(max = 100) public String subject;
+    @NotBlank @Pattern(regexp = "public|private") public String visibility;
+    @NotBlank @Size(max = 1000) public String url;
 
     // Optional: Add getters & setters if needed
     public String getTitle() { return title; }

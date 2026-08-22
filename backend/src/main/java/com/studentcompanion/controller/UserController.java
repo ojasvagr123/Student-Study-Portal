@@ -2,38 +2,61 @@ package com.studentcompanion.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.studentcompanion.dto.ProfileUpdateRequest;
+import com.studentcompanion.dto.UserResponse;
 import com.studentcompanion.model.User;
 import com.studentcompanion.repository.UserRepository;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:3000") // Restrict to frontend
 public class UserController {
+    private final UserRepository userRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    public UserController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
-    // 🔓 Public or Admin: Get all users
     @GetMapping("/all")
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll().stream().map(UserResponse::from).toList();
     }
 
-    // 🔐 Get profile of currently authenticated user
-@GetMapping("/profile")
-public ResponseEntity<User> getProfile(Authentication authentication) {
-    String email = authentication.getName();
-    User user = userRepository.findByEmail(email);
-    if (user == null) {
-        return ResponseEntity.notFound().build();
+    @GetMapping("/profile")
+    public ResponseEntity<UserResponse> getProfile(Authentication authentication) {
+        return ResponseEntity.ok(UserResponse.from(requireUser(authentication)));
     }
-    return ResponseEntity.ok(user);
-}
 
+    @PutMapping("/profile")
+    public ResponseEntity<UserResponse> updateProfile(
+            Authentication authentication,
+            @Valid @RequestBody ProfileUpdateRequest request) {
+        User user = requireUser(authentication);
+        user.setName(request.name());
+        user.setBranch(request.branch());
+        user.setCurrentSemester(request.currentSemester());
+        user.setGoal(request.goal());
+        user.setLeetcodeUrl(request.leetcodeUrl());
+        user.setGithubUrl(request.githubUrl());
+        user.setSkills(request.skills());
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        return ResponseEntity.ok(UserResponse.from(userRepository.save(user)));
+    }
 
+    private User requireUser(Authentication authentication) {
+        User user = userRepository.findByEmail(authentication.getName());
+        if (user == null) throw new IllegalArgumentException("User account not found");
+        return user;
+    }
 }

@@ -7,24 +7,18 @@ const LogoutButton = () => {
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
 
-  console.log("✅ LogoutButton rendered");
-
   const handleLogout = () => {
-    console.log("🧪 Logout button clicked");
     logout();
-    localStorage.clear();
 
     toast.success("✅ Logged out successfully", {
       position: "top-center",
       autoClose: 1500,
       onClose: () => {
-        console.log("🧭 Navigating to / after toast");
         navigate("/", { replace: true });
       },
     });
 
     setTimeout(() => {
-      console.log("🧭 Fallback navigate");
       navigate("/", { replace: true });
     }, 2000);
   };

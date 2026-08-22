@@ -6,13 +6,13 @@ export default function StriverProgressSection() {
   const [topics, setTopics] = useState([]);
 
   useEffect(() => {
-    axios.get("api/career/placement/progress")
+    axios.get("/api/career/placement/progress")
       .then(res => setTopics(res.data))
       .catch(() => console.error("Failed to load Striver topics"));
   }, []);
 
   const toggleAttempt = (topic) => {
-    axios.post("api/career/placement/attempt", {
+    axios.post("/api/career/placement/attempt", {
       topic: topic.topic,
       link: topic.link
     }).then(() => {

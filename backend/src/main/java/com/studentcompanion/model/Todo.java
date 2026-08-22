@@ -1,58 +1,27 @@
 package com.studentcompanion.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "todos")
 public class Todo {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @Column(nullable = false, length = 500)
     private String text;
     private boolean done;
-    private Long userId; // Link to the user
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
+    private User user;
 
-    // Constructors
-    public Todo() {}
-
-    public Todo(String text, boolean done, Long userId) {
-        this.text = text;
-        this.done = done;
-        this.userId = userId;
-    }
-
-    // ✅ Getters
-    public Long getId() {
-        return id;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public boolean isDone() {
-        return done;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    // ✅ Setters
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public void setDone(boolean done) {
-        this.done = done;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getText() { return text; }
+    public void setText(String text) { this.text = text; }
+    public boolean isDone() { return done; }
+    public void setDone(boolean done) { this.done = done; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 }

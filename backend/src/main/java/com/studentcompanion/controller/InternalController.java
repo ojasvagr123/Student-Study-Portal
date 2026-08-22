@@ -6,12 +6,13 @@ import com.studentcompanion.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/internal")
-@CrossOrigin(origins = "*")
+@PreAuthorize("hasAuthority('ADMIN')")
 public class InternalController {
 
     @Autowired

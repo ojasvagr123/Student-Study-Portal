@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../utils/axiosConfig";
 
 export default function CareerQuiz({ goal }) {
   const [questions, setQuestions] = useState([]);
@@ -11,7 +11,7 @@ export default function CareerQuiz({ goal }) {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8080/api/quiz/${goal.toUpperCase()}`)
+      .get(`/api/quiz/${goal.toUpperCase()}`)
       .then((res) => {
         setQuestions(res.data);
         setLoading(false);
@@ -33,7 +33,7 @@ export default function CareerQuiz({ goal }) {
     }));
 
     try {
-      const res = await axios.post("http://localhost:8080/api/quiz/submit", submission);
+      const res = await axios.post("/api/quiz/submit", submission);
       setScore(res.data);
       setSubmitted(true);
     } catch (e) {
